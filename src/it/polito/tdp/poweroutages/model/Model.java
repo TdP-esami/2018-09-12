@@ -13,11 +13,11 @@ import org.jgrapht.graph.SimpleWeightedGraph;
 import it.polito.tdp.poweroutages.db.PowerOutagesDAO;
 
 public class Model {
-	SimpleWeightedGraph<Nerc, DefaultWeightedEdge> graph;
-	NercIdMap nIdMap;
+	private SimpleWeightedGraph<Nerc, DefaultWeightedEdge> graph;
+	private NercIdMap nIdMap;
 	
-	Simulatore sim = new Simulatore();
-	PowerOutagesDAO dao = new PowerOutagesDAO();
+	private Simulatore sim = new Simulatore();
+	private PowerOutagesDAO dao = new PowerOutagesDAO();
 	
 	public Model(){
 		nIdMap = new NercIdMap();
