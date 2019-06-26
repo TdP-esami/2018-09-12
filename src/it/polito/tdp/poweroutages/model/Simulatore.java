@@ -13,10 +13,10 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
 public class Simulatore {
-	//MODELLO/LO STATO DEL SISTEMA
+	//MODELLO LO STATO DEL SISTEMA
 	private Graph<Nerc,DefaultWeightedEdge> grafo;
-	private List<PowerOutage> powerOutages;
-	private Map<Nerc, Set<Nerc>> prestiti;
+	private List<PowerOutage> powerOutages; // tutte le interruzioni di corrente
+	private Map<Nerc, Set<Nerc>> prestiti; // mappa con i nerc come chiave e il set di vicini a cui si presta la corrente
 	
 	//PARAMETRI DELLA SIMULAZIONE
 	private int k;
@@ -35,6 +35,7 @@ public class Simulatore {
 		this.bonus = new HashMap<Nerc,Long>();
 		this.prestiti = new HashMap<Nerc, Set<Nerc>>();
 		
+		// procedimento per fare la new del set<Nerc>
 		for(Nerc n : nercMap.values()) {
 			this.bonus.put(n, Long.valueOf(0));
 			this.prestiti.put(n, new HashSet<Nerc>());
@@ -42,11 +43,12 @@ public class Simulatore {
 		
 		this.CATASTROFI = 0;
 		
+		// salvare i parametri come nei costruttori
 		this.k = k;
 		this.powerOutages = powerOutages;
 		this.grafo = grafo;
 		
-		//inserisco gli eventi iniziali
+		// inserisco gli eventi iniziali
 		for(PowerOutage po : this.powerOutages) {
 			Evento e = new Evento(Evento.TIPO.INIZIO_INTERRUZIONE, 
 					po.getNerc(),null, po.getInizio(),po.getInizio(),po.getFine());
@@ -57,17 +59,18 @@ public class Simulatore {
 	public void run() {
 		Evento e;
 		while((e = queue.poll()) != null) {
+			// Lo switch serve quando le simulazioni hanno più tipi di evento
 			switch(e.getTipo()) {
 				case INIZIO_INTERRUZIONE:
 					Nerc nerc = e.getNerc();
 					System.out.println("INIZIO INTERRUZIONE NERC: " + nerc);
 
-					//cerco se c'Ã¨ un donatore, altrimenti ... CATASTROFE
+					//cerco se c'è un donatore, altrimenti ... CATASTROFE
 					Nerc donatore = null;
 					//cerco tra i miei "debitori"
 					if(this.prestiti.get(nerc).size() > 0) {
-						//scelgo tra i miei debitori
-						double min = Long.MAX_VALUE;
+						//scelgo tra i miei debitori (algoritmo standard per cercare i valori minimi in un set
+						double min = Long.MAX_VALUE; // massimo valore per i long
 						for(Nerc n : this.prestiti.get(nerc)) {
 							DefaultWeightedEdge edge = this.grafo.getEdge(nerc, n);
 							if(this.grafo.getEdgeWeight(edge) < min) {
@@ -115,7 +118,7 @@ public class Simulatore {
 					if(e.getDonatore() != null)
 						this.bonus.put(e.getDonatore(), bonus.get(e.getDonatore()) + 
 								Duration.between(e.getDataInizio(), e.getDataFine()).toDays());
-					//dire che il donatore non sta piÃ¹ prestando
+					//dire che il donatore non sta più prestando
 					e.getDonatore().setStaPrestando(false);
 					
 					break;
